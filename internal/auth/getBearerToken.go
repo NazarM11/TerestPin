@@ -1,9 +1,9 @@
 package auth
 
 import (
+	"errors"
 	"net/http"
 	"strings"
-	"errors"
 )
 
 var ErrNoAuthHeaderIncluded = errors.New("no auth header included in request")
@@ -12,12 +12,13 @@ func GetBearerToken(headers http.Header) (string, error) {
 	authHeader := headers.Get("Authorization")
 
 	if authHeader == "" {
-    	return "", ErrNoAuthHeaderIncluded
-	}
-
-	tokenString := strings.Split(authHeader, " ")
-	if len(tokenString) < 2 || tokenString[0] != "Bearer" {
 		return "", ErrNoAuthHeaderIncluded
 	}
-	return tokenString[1], nil
+
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	if token == authHeader {
+		return "", errors.New("malformed authorization header")
+	}
+
+	return strings.TrimSpace(token), nil
 }

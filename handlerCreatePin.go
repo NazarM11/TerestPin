@@ -7,15 +7,21 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+	"strings"
 
 	"github.com/NazarM11/TerestPin/internal/database"
 	"github.com/google/uuid"
 )
 
 func (cfg *apiConfig) CreatePin(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value(UserIDKey).(uuid.UUID)
+	if !ok {
+		respondWithError(w, 401, "Unauthorized", nil)
+		return
+	}
+
 	err := r.ParseMultipartForm(50 << 20)
 	if err != nil {
-		fmt.Printf("Multipart Error: %v\n", err)
 		respondWithError(w, 400, "File too large", err)
 		return
 	}
@@ -27,10 +33,14 @@ func (cfg *apiConfig) CreatePin(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	title := r.FormValue("title")
-	userIDStr := r.FormValue("user_id") // We'll get real auth later
-
 	fileExt := filepath.Ext(header.Filename)
+	allowedExts := map[string]bool{".jpg": true, ".jpeg": true, ".png": true, ".gif": true}
+	
+	if !allowedExts[strings.ToLower(fileExt)] {
+    	respondWithError(w, 400, "Invalid file type", nil)
+    	return
+	}
+
 	newFilename := fmt.Sprintf("%s%s", uuid.New().String(), fileExt)
 	fullPath := filepath.Join(cfg.uploads, newFilename)
 
@@ -40,17 +50,21 @@ func (cfg *apiConfig) CreatePin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer dst.Close()
-	io.Copy(dst, file)
 
-	userID, _ := uuid.Parse(userIDStr)
+	if _, err := io.Copy(dst, file); err != nil {
+		respondWithError(w, 500, "Failed to save file contents", err)
+		return
+	}
+
+	publicURL := fmt.Sprintf("/uploads/%s", newFilename)
 	now := time.Now().UTC()
 
 	pin, err := cfg.db.CreatePin(r.Context(), database.CreatePinParams{
 		ID:        uuid.New(),
 		CreatedAt: now,
 		UpdatedAt: now,
-		Title:     title,
-		ImageUrl:  fullPath,
+		Title:     r.FormValue("title"),
+		ImageUrl:  publicURL,
 		UserID:    userID,
 	})
 

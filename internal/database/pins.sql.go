@@ -49,11 +49,16 @@ func (q *Queries) CreatePin(ctx context.Context, arg CreatePinParams) (Pin, erro
 }
 
 const deletePin = `-- name: DeletePin :exec
-DELETE FROM pins WHERE id = $1
+DELETE FROM pins WHERE id = $1 AND user_id = $2
 `
 
-func (q *Queries) DeletePin(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.ExecContext(ctx, deletePin, id)
+type DeletePinParams struct {
+	ID     uuid.UUID
+	UserID uuid.UUID
+}
+
+func (q *Queries) DeletePin(ctx context.Context, arg DeletePinParams) error {
+	_, err := q.db.ExecContext(ctx, deletePin, arg.ID, arg.UserID)
 	return err
 }
 
@@ -73,4 +78,38 @@ func (q *Queries) GetPin(ctx context.Context, id uuid.UUID) (Pin, error) {
 		&i.UserID,
 	)
 	return i, err
+}
+
+const getPinsByUserID = `-- name: GetPinsByUserID :many
+SELECT id, created_at, updated_at, image_url, title, user_id FROM pins WHERE user_id = $1 ORDER BY created_at DESC
+`
+
+func (q *Queries) GetPinsByUserID(ctx context.Context, userID uuid.UUID) ([]Pin, error) {
+	rows, err := q.db.QueryContext(ctx, getPinsByUserID, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Pin
+	for rows.Next() {
+		var i Pin
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.ImageUrl,
+			&i.Title,
+			&i.UserID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

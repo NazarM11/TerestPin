@@ -15,7 +15,7 @@ type response struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-func (cfg *apiConfig) Login(w http.ResponseWriter, r *http.Request) {
+func (cfg *apiConfig) LoginUser (w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
 	err := decoder.Decode(&params)

@@ -7,4 +7,7 @@ RETURNING *;
 SELECT * FROM pins WHERE id = $1;
 
 -- name: DeletePin :exec
-DELETE FROM pins WHERE id = $1;
+DELETE FROM pins WHERE id = $1 AND user_id = $2;
+
+-- name: GetPinsByUserID :many
+SELECT * FROM pins WHERE user_id = $1 ORDER BY created_at DESC;

@@ -15,9 +15,9 @@ import (
 )
 
 type apiConfig struct {
-	db      *database.Queries
-	uploads string
-	jwtSecret      string
+	db        *database.Queries
+	uploads   string
+	jwtSecret string
 }
 
 func main() {
@@ -53,34 +53,31 @@ func main() {
 	dbQueries := database.New(db)
 
 	cfg := apiConfig{
-		db:      dbQueries,
-		uploads: uploadPath,
+		db:        dbQueries,
+		uploads:   uploadPath,
 		jwtSecret: jwtSecret,
 	}
 
 	r := chi.NewRouter()
-
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello from Chi!"))
+	r.Post("/api/users", cfg.CreateUser)
+	r.Post("/api/login", cfg.LoginUser)
+	r.Post("/api/refresh", cfg.RefreshUserToken)
+
+	r.Group(func(r chi.Router) {
+		r.Use(cfg.MiddlewareAuth)
+
+		r.Post("/api/pins", cfg.CreatePin)
+		r.Delete("/api/pins/{PinID}", cfg.DeletePin)
+		r.Delete("/api/users", cfg.DeleteUser)
 	})
+
 	fs := http.FileServer(http.Dir(uploadPath))
 	r.Handle("/uploads/*", http.StripPrefix("/uploads/", fs))
-	
-	r.Group(func(r chi.Router) {
-    	r.Use(cfg.MiddlewareAuth)
-    
-    	r.Post("/api/pins", cfg.CreatePin)
-	})
-    
-	r.Post("/users", cfg.CreateUser)
-	r.Post("/pins", cfg.CreatePin)
 
-	
-
-	fmt.Println("Server is live at http://localhost:8080")
+	fmt.Printf("Server is live at http://localhost:%s\n", port)
 	err = http.ListenAndServe(":"+port, r)
 	if err != nil {
 		log.Fatal("Server failed to start:", err)

@@ -7,6 +7,10 @@ import (
 	"github.com/NazarM11/TerestPin/internal/auth"
 )
 
+type contextKey string
+
+const UserIDKey contextKey = "userID"
+
 func (cfg *apiConfig) MiddlewareAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tokenString, err := auth.GetBearerToken(r.Header)
@@ -21,7 +25,7 @@ func (cfg *apiConfig) MiddlewareAuth(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "userID", userID)
+		ctx := context.WithValue(r.Context(), UserIDKey, userID)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
