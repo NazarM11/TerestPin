@@ -1,4 +1,4 @@
-# PinService Backend
+# Terestpin Backend
 
 A robust, production-ready backend service inspired by Pinterest, built with **Go (Golang)**, **PostgreSQL**, and **Docker**. This project demonstrates clean architecture, JWT authentication, and automated environment management.
 
