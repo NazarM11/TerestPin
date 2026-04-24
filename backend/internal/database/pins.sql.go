@@ -80,6 +80,49 @@ func (q *Queries) GetPin(ctx context.Context, id uuid.UUID) (Pin, error) {
 	return i, err
 }
 
+const getPins = `-- name: GetPins :many
+SELECT id, created_at, updated_at, image_url, title, user_id FROM pins
+WHERE title ILIKE $3
+ORDER BY created_at DESC
+LIMIT $1 OFFSET $2
+`
+
+type GetPinsParams struct {
+	Limit  int32
+	Offset int32
+	Title  string
+}
+
+func (q *Queries) GetPins(ctx context.Context, arg GetPinsParams) ([]Pin, error) {
+	rows, err := q.db.QueryContext(ctx, getPins, arg.Limit, arg.Offset, arg.Title)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Pin
+	for rows.Next() {
+		var i Pin
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.ImageUrl,
+			&i.Title,
+			&i.UserID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPinsByUserID = `-- name: GetPinsByUserID :many
 SELECT id, created_at, updated_at, image_url, title, user_id FROM pins WHERE user_id = $1 ORDER BY created_at DESC
 `

@@ -1,6 +1,6 @@
 module github.com/NazarM11/TerestPin
 
-go 1.25.0
+go 1.23
 
 require (
 	github.com/alexedwards/argon2id v1.0.0

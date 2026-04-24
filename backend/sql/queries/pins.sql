@@ -6,6 +6,12 @@ RETURNING *;
 -- name: GetPin :one
 SELECT * FROM pins WHERE id = $1;
 
+-- name: GetPins :many
+SELECT * FROM pins
+WHERE title ILIKE $3
+ORDER BY created_at DESC
+LIMIT $1 OFFSET $2;
+
 -- name: DeletePin :exec
 DELETE FROM pins WHERE id = $1 AND user_id = $2;
 
