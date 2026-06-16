@@ -3,11 +3,13 @@ TerestPin Backend 📍
 TerestPin is a high-performance, modular RESTful API built with Go, designed for an image-sharing platform. The project demonstrates professional backend engineering practices, including Clean Architecture, Dependency Injection, and type-safe database interactions.
 
 💡 Motivation
+
 Most modern image-sharing applications face complex challenges around asset security, rapid database lookups, and scaling heavy file uploads. TerestPin was built to explore how to solve these problems using Go's standard library philosophy: low overhead, absolute clarity, and no magical abstraction layers.
 
 The goal of this project was to move away from massive, unmaintainable monolithic files and build an enterprise-ready API structure from scratch. It serves as a blueprint for implementing strict compile-time safety (via sqlc), bulletproof security parameters (via Argon2id), and highly modular dependency injection without relying on bloated third-party frameworks.
 
 🛠 Tech Stack
+
     Language: Go (1.23+)
 
     Routing: Chi Router (Lightweight & idiomatic)
@@ -21,6 +23,7 @@ The goal of this project was to move away from massive, unmaintainable monolithi
     Validation: Custom logic for file types and metadata
 
 🏗 Architectural Overview
+
 The project is structured to ensure high maintainability and separation of concerns by following Dependency Injection principles.
 
     internal/api: Core configurations and shared types (e.g., ApiConfig).
@@ -34,6 +37,7 @@ The project is structured to ensure high maintainability and separation of conce
     internal/auth: Low-level security primitives for token generation and validation.
 
 🚀 Key Features
+
 🔐 Secure Authentication
 
     State-of-the-art Argon2id hashing for user passwords.
