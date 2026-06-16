@@ -1,4 +1,3 @@
-Here is your updated README with the requested sections integrated. They have been tailored to match the technical, professional tone of your existing documentation while keeping the layout clean and readable.
 TerestPin Backend 📍
 
 TerestPin is a high-performance, modular RESTful API built with Go, designed for an image-sharing platform. The project demonstrates professional backend engineering practices, including Clean Architecture, Dependency Injection, and type-safe database interactions.
