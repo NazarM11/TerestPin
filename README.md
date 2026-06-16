@@ -1,115 +1,63 @@
-# TerestPin Backend 📍
+🎯 Motivation
 
-TerestPin is a high-performance, modular RESTful API built with **Go**, designed for an image-sharing platform. The project demonstrates professional backend engineering practices, including **Clean Architecture**, **Dependency Injection**, and type-safe database interactions.
+TerestPin was built to deepen my understanding of production-grade backend systems in Go. The goal was to move beyond small exercises and design a real-world REST API with clear boundaries between components, strong typing at the database layer, and secure authentication flows.
 
----
+This project specifically focuses on:
 
-## 🛠 Tech Stack
+Building a scalable and maintainable backend architecture
+Practicing clean separation of concerns using Clean Architecture principles
+Implementing secure authentication with JWT and modern password hashing (Argon2id)
+Working with type-safe SQL generation using sqlc
+Simulating real-world concerns like file validation, upload limits, and structured storage
+⚡ Quick Start
 
-* **Language:** Go (1.23+)
-* **Routing:** [Chi Router](https://github.com/go-chi/chi) (Lightweight & idiomatic)
-* **Database:** PostgreSQL with [sqlc](https://sqlc.dev/) (Type-safe SQL)
-* **Authentication:** JWT (JSON Web Tokens) with Argon2id password hashing
-* **Containerization:** Docker & Docker Compose
-* **Validation:** Custom logic for file types and metadata
+If you want to run the project locally in under a minute:
 
----
+git clone https://github.com/NazarM11/TerestPin.git
+cd TerestPin
+cp .env.example .env   # or manually create .env as shown above
+docker-compose up --build
 
-## 🏗 Architectural Overview
+Then visit:
 
-The project is structured to ensure high maintainability and separation of concerns by following **Dependency Injection** principles.
+http://localhost:8080
+📖 Usage
+Register a user
+curl -X POST http://localhost:8080/api/users \
+-H "Content-Type: application/json" \
+-d '{"email":"test@example.com","password":"password123"}'
+Login
+curl -X POST http://localhost:8080/api/login \
+-H "Content-Type: application/json" \
+-d '{"email":"test@example.com","password":"password123"}'
 
-* **`internal/api`**: Core configurations and shared types (e.g., `ApiConfig`).
-* **`internal/api/handlers`**: Pure HTTP logic. Handlers are implemented as closure-based constructors to receive dependencies without global state.
-* **`internal/api/middleware`**: Security and logging layers (JWT validation, request logging).
-* **`internal/database`**: Auto-generated type-safe DAO layer using `sqlc`.
-* **`internal/auth`**: Low-level security primitives for token generation and validation.
+Response will include a JWT token:
 
+{
+  "token": "eyJhbGciOiJIUzI1NiIs..."
+}
+Create a pin (protected)
+curl -X POST http://localhost:8080/api/pins \
+-H "Authorization: Bearer YOUR_TOKEN" \
+-F "image=@example.jpg"
+Get pins
+curl http://localhost:8080/api/pins
+🤝 Contributing
 
+Contributions are welcome, but this is primarily a learning-focused project.
 
----
+If you want to contribute:
 
-## 🚀 Key Features
+Fork the repository
 
-### 🔐 Secure Authentication
-* State-of-the-art **Argon2id** hashing for user passwords.
-* Secure JWT issuance and validation.
-* Custom **Auth Middleware** that injects user identity into the request context.
+Create a feature branch:
 
-### 🖼 Media Management
-* **Smart Uploads:** Validates file signatures (magic bytes) to ensure uploaded files are actual images, not just renamed binaries.
-* **Automated Storage:** Structured file naming using UUIDs to prevent filename collisions.
-* **Size Constraints:** Multi-part form limits to prevent DOS attacks via large file uploads.
-
-### 📊 Database Efficiency
-* Type-safe queries via `sqlc`, eliminating "magic strings" in SQL.
-* Structured migrations for consistent schema management.
-
----
-
-## 🛠 Getting Started
-
-### Prerequisites
-* Go 1.23 or higher
-* Docker and Docker Compose
-* A `.env` file (see configuration)
-
-### Installation & Run
-
-1.  **Clone the repository:**
-    ```bash
-    git clone [https://github.com/NazarM11/TerestPin.git](https://github.com/NazarM11/TerestPin.git)
-    cd TerestPin
-    ```
-
-2.  **Configure Environment:**
-    Create a `.env` file in the root directory:
-    ```env
-    # --- Database Configuration ---
-    # Used by Docker to initialize the DB and by Go to connect
-    DB_USER=postgres
-    DB_PASSWORD=your_secure_password_here
-    DB_NAME=terestpin_db
-    DB_HOST=db
-    DB_PORT=5432
-
-    # Connection string for the Go application
-    # Format: postgres://<user>:<password>@<host>:<port>/<dbname>?sslmode=disable
-    DB_URL=postgres://postgres:your_secure_password_here@db:5432/terestpin_db?sslmode=disable
-
-    # --- Server Configuration ---
-    PORT=8080
-    UPLOAD_PATH="./uploads"
-
-    # --- Security ---
-    # Change this to a long, random string in production
-    JWT_SECRET="your_secret_key_here"
-    ```
-
-3.  **Spin up the stack:**
-    ```bash
-    docker-compose up --build
-    ```
-
-The server will be live at `http://localhost:8080`.
-
----
-
-## 🗺 API Endpoints
-
-### Public
-* `POST /api/users` - Register a new user
-* `POST /api/login` - Authenticate and receive a token
-* `GET /api/pins` - List all public pins
-
-### Protected (Requires Bearer Token)
-* `POST /api/pins` - Upload a new pin (Multipart Form)
-* `DELETE /api/pins/{id}` - Remove a pin
-* `DELETE /api/users` - Delete user account and associated data
-
----
-
-## 🧠 What I Learned
-* **Refactoring from Monolith to Modules:** Transitioned the codebase from a single `main.go` to a professional package-based structure.
-* **Context Management:** Effectively using `context.Context` to pass user metadata through middleware to handlers.
-* **Dependency Injection:** Avoiding global variables by passing configuration pointers to constructors.
+git checkout -b feature-name
+Make your changes with clear, atomic commits
+Ensure the project builds and runs via Docker
+Open a pull request describing what you changed and why
+Guidelines
+Keep code consistent with Clean Architecture principles used in the project
+Avoid introducing global state
+Prefer explicit dependencies over hidden coupling
+Keep handlers thin and business logic separated
